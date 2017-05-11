@@ -131,19 +131,6 @@ public class EventAnimatorEditor : Editor
 	}
 
 	//---------------------------------------------------------------------------------------------------------
-	void DrawAndHandleNewAnimationDataButton(SerializedProperty _eventAnim, int _idx)
-	{
-		EditorGUILayout.BeginHorizontal ();
-		GUILayout.FlexibleSpace ();
-		if (GUILayout.Button ("Add New Animation", GUILayout.MaxWidth (180f)))
-		{
-			ShowAddAnimationDataMenu (_eventAnim, _idx);
-		}
-		GUILayout.FlexibleSpace ();
-		EditorGUILayout.EndHorizontal ();
-	}
-
-	//---------------------------------------------------------------------------------------------------------
 	void ShowAddAnimationDataMenu(SerializedProperty _eventAnim, int _idx)
 	{
 		m_selectedEventAnim = _idx;
@@ -167,7 +154,7 @@ public class EventAnimatorEditor : Editor
 		EditorGUIUtility.labelWidth = 20f;
 		EditorGUILayout.LabelField (_typeName);
 		if (GUILayout.Button ("Add", singleLineHeight))
-			DrawAndHandleNewAnimationDataButton (_eventAnim, _idx);
+			ShowAddAnimationDataMenu (_eventAnim, _idx);
 		if (GUILayout.Button (_shown ? "Hide" : "Show", singleLineHeight))
 			_shown = !_shown;
 		_play = GUILayout.Button ("Play", singleLineHeight);
