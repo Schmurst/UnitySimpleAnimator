@@ -42,6 +42,9 @@ public class EventAnimatorEditor : Editor
 	{	
 		serializedObject.Update ();
 
+		// add new event button
+		DrawAndHandleAddNewAnimationButton();
+
 		// start layout of anim data
 		int toBeRemoved = -1;
 		bool selectedForRemoval = false;
@@ -59,9 +62,6 @@ public class EventAnimatorEditor : Editor
 			m_eventAnimVisibilities.RemoveAt (toBeRemoved);
 		}
 
-		// add new event button
-		DrawAndHandleAddNewAnimationButton();
-
 		serializedObject.ApplyModifiedProperties();
 	}
 
@@ -72,7 +72,7 @@ public class EventAnimatorEditor : Editor
 		{
 			EditorGUILayout.BeginHorizontal ();
 			GUILayout.FlexibleSpace ();
-			if (GUILayout.Button ("Add New Event Animation", GUILayout.MaxWidth (180f)))
+			if (GUILayout.Button ("Add New Event Type", GUILayout.MaxWidth (180f)))
 			{
 				ShowAddAnimationMenu ();
 			}
@@ -114,16 +114,13 @@ public class EventAnimatorEditor : Editor
 
 		bool play = false;
 		bool show = m_eventAnimVisibilities [_idx];
-		DrawAnimationButtonBar (_eventAnim, typeName, ref show, ref play, ref _toBeRemoved);
+		DrawAnimationButtonBar (_eventAnim, typeName, _idx, ref show, ref play, ref _toBeRemoved);
 		m_eventAnimVisibilities [_idx] = show;
 
 		EditorGUI.indentLevel++;
 		if (show)
 		{
-			//TODO custom drawers here
 			EditorGUILayout.PropertyField (_eventAnim.FindPropertyRelative("ScaleAnims"), true);
-
-			DrawAndHandleNewAnimationDataButton (_eventAnim, _idx);
 		}
 		EditorGUI.indentLevel--;
 
@@ -138,7 +135,7 @@ public class EventAnimatorEditor : Editor
 	{
 		EditorGUILayout.BeginHorizontal ();
 		GUILayout.FlexibleSpace ();
-		if (GUILayout.Button ("Add New Animation Data", GUILayout.MaxWidth (180f)))
+		if (GUILayout.Button ("Add New Animation", GUILayout.MaxWidth (180f)))
 		{
 			ShowAddAnimationDataMenu (_eventAnim, _idx);
 		}
@@ -159,7 +156,7 @@ public class EventAnimatorEditor : Editor
 	}
 
 	//---------------------------------------------------------------------------------------------------------
-	void DrawAnimationButtonBar(SerializedProperty _anim, string _typeName, ref bool _shown, 
+	void DrawAnimationButtonBar(SerializedProperty _eventAnim, string _typeName, int _idx, ref bool _shown, 
 								ref bool _play, ref bool _remove)
 	{
 		float defaultLabelWidth = EditorGUIUtility.labelWidth;
@@ -169,6 +166,8 @@ public class EventAnimatorEditor : Editor
 		EditorGUILayout.BeginHorizontal ();
 		EditorGUIUtility.labelWidth = 20f;
 		EditorGUILayout.LabelField (_typeName);
+		if (GUILayout.Button ("Add", singleLineHeight))
+			DrawAndHandleNewAnimationDataButton (_eventAnim, _idx);
 		if (GUILayout.Button (_shown ? "Hide" : "Show", singleLineHeight))
 			_shown = !_shown;
 		_play = GUILayout.Button ("Play", singleLineHeight);
