@@ -15,7 +15,7 @@ public abstract class AnimationBase
 	protected Transform target;
 
 	#if UNITY_EDITOR
-	const float s_editorDeltaTime = 1f / 30f;
+	const float s_editorDeltaTime = 1f / 60f;
 	#endif
 
 	//---------------------------------------------------------------------------------------------------------
