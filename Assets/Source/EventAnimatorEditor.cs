@@ -10,31 +10,37 @@ using UnityEditor;
 public class EventAnimatorEditor : Editor
 {
 	GUIContent[] m_eventTypes;
+	GUIContent[] m_dataTypes;
 	SerializedProperty m_eventAnimations;
 	List<bool> m_eventAnimVisibilities = new List<bool>();
+	int m_selectedEventAnim;
 
 	//---------------------------------------------------------------------------------------------------------
 	void OnEnable()
 	{
 		m_eventAnimations = serializedObject.FindProperty ("m_eventAnimations");
-		string[] names = Enum.GetNames (typeof(EventAnimationType));
-		m_eventTypes = new GUIContent[names.Length - 1];
+		string[] eventNames = Enum.GetNames (typeof(EventAnimationType));
+		string[] dataNames = Enum.GetNames(typeof(AnimationType));
+		m_eventTypes = new GUIContent[eventNames.Length - 1];
+		m_dataTypes = new GUIContent[dataNames.Length - 1];
 		m_eventAnimVisibilities.Clear ();
+
 		for (int i = 0; i < m_eventAnimations.arraySize; i++)
 			m_eventAnimVisibilities.Add (true);
 
-		for (int i = 0; i < names.Length; i++)
-			if(names[i] != EventAnimationType.nullOrLength.ToString())
-				m_eventTypes [i] = new GUIContent (names [i]);
+		for (int i = 0; i < eventNames.Length; i++)
+			if(eventNames[i] != EventAnimationType.nullOrLength.ToString())
+				m_eventTypes [i] = new GUIContent (eventNames [i]);
+
+		for (int i = 0; i < dataNames.Length; i++)
+			if(dataNames[i] != AnimationType.NullOrLength.ToString())
+				m_dataTypes [i] = new GUIContent (dataNames [i]);
 	}
 
 	//---------------------------------------------------------------------------------------------------------
 	public override void OnInspectorGUI ()
 	{	
 		serializedObject.Update ();
-
-		// add new event button
-		DrawAndHandleAddNewAnimationButton();
 
 		// start layout of anim data
 		int toBeRemoved = -1;
@@ -46,13 +52,16 @@ public class EventAnimatorEditor : Editor
 				toBeRemoved = i;
 		}
 
-		// remove this index
+		// remove this event animation
 		if (toBeRemoved >= 0)
 		{
 			m_eventAnimations.DeleteArrayElementAtIndex (toBeRemoved);
 			m_eventAnimVisibilities.RemoveAt (toBeRemoved);
 		}
-		
+
+		// add new event button
+		DrawAndHandleAddNewAnimationButton();
+
 		serializedObject.ApplyModifiedProperties();
 	}
 
@@ -73,22 +82,48 @@ public class EventAnimatorEditor : Editor
 	}
 
 	//---------------------------------------------------------------------------------------------------------
-	void DrawAnimationData(SerializedProperty _animation, ref bool _toBeRemoved, int _idx)
+	void ShowAddAnimationMenu()
 	{
-		var type = (EventAnimationType)_animation.FindPropertyRelative ("Type").enumValueIndex;
+		// SH: taken from UnityEngine.EventTrigger custom inspector
+		GenericMenu menu = new GenericMenu();
+		for (int i = 0; i < m_eventTypes.Length; ++i)
+		{
+			bool isValidChoice = true;
+			for (int p = 0; p <m_eventAnimations.arraySize; ++p)
+			{
+				SerializedProperty animation = m_eventAnimations.GetArrayElementAtIndex(p);
+				SerializedProperty type = animation.FindPropertyRelative("Type");
+				if (type.enumValueIndex == i)
+					isValidChoice = false;
+			}
+
+			if (isValidChoice)
+				menu.AddItem(m_eventTypes[i], false, OnAddNewEventAnimation, i);
+			else
+				menu.AddDisabledItem(m_eventTypes[i]);
+		}
+		menu.ShowAsContext ();
+		Event.current.Use();
+	}
+
+	//---------------------------------------------------------------------------------------------------------
+	void DrawAnimationData(SerializedProperty _eventAnim, ref bool _toBeRemoved, int _idx)
+	{
+		var type = (EventAnimationType)_eventAnim.FindPropertyRelative ("Type").enumValueIndex;
 		string typeName = type.ToString ();
 
 		bool play = false;
 		bool show = m_eventAnimVisibilities [_idx];
-		DrawAnimationButtonBar (_animation, typeName, ref show, ref play, ref _toBeRemoved);
+		DrawAnimationButtonBar (_eventAnim, typeName, ref show, ref play, ref _toBeRemoved);
 		m_eventAnimVisibilities [_idx] = show;
 
 		EditorGUI.indentLevel++;
 		if (show)
 		{
-			EditorGUILayout.PropertyField (_animation.FindPropertyRelative("ScaleData"), true);
-			EditorGUILayout.PropertyField (_animation.FindPropertyRelative("PositionData"), true);
-			EditorGUILayout.PropertyField (_animation.FindPropertyRelative("RotationData"), true);
+			//TODO custom drawers here
+			EditorGUILayout.PropertyField (_eventAnim.FindPropertyRelative("ScaleAnims"), true);
+
+			DrawAndHandleNewAnimationDataButton (_eventAnim, _idx);
 		}
 		EditorGUI.indentLevel--;
 
@@ -97,7 +132,32 @@ public class EventAnimatorEditor : Editor
 			PlayAnimation (type);
 		}
 	}
-		
+
+	//---------------------------------------------------------------------------------------------------------
+	void DrawAndHandleNewAnimationDataButton(SerializedProperty _eventAnim, int _idx)
+	{
+		EditorGUILayout.BeginHorizontal ();
+		GUILayout.FlexibleSpace ();
+		if (GUILayout.Button ("Add New Animation Data", GUILayout.MaxWidth (180f)))
+		{
+			ShowAddAnimationDataMenu (_eventAnim, _idx);
+		}
+		GUILayout.FlexibleSpace ();
+		EditorGUILayout.EndHorizontal ();
+	}
+
+	//---------------------------------------------------------------------------------------------------------
+	void ShowAddAnimationDataMenu(SerializedProperty _eventAnim, int _idx)
+	{
+		m_selectedEventAnim = _idx;
+		GenericMenu menu = new GenericMenu();
+		for (int i = 0; i < m_dataTypes.Length; ++i)
+			menu.AddItem(m_dataTypes[i], false, OnAddNewAnimationData, i);
+
+		menu.ShowAsContext ();
+		Event.current.Use();
+	}
+
 	//---------------------------------------------------------------------------------------------------------
 	void DrawAnimationButtonBar(SerializedProperty _anim, string _typeName, ref bool _shown, 
 								ref bool _play, ref bool _remove)
@@ -123,30 +183,6 @@ public class EventAnimatorEditor : Editor
 		EditorGUIUtility.labelWidth = defaultLabelWidth;
 	}
 
-	//---------------------------------------------------------------------------------------------------------
-	void ShowAddAnimationMenu()
-	{
-		// SH: taken from UnityEngine.EventTrigger custom inspector
-		GenericMenu menu = new GenericMenu();
-		for (int i = 0; i < m_eventTypes.Length; ++i)
-		{
-			bool isValidChoice = true;
-			for (int p = 0; p <m_eventAnimations.arraySize; ++p)
-			{
-				SerializedProperty animation = m_eventAnimations.GetArrayElementAtIndex(p);
-				SerializedProperty type = animation.FindPropertyRelative("Type");
-				if (type.enumValueIndex == i)
-					isValidChoice = false;
-			}
-
-			if (isValidChoice)
-				menu.AddItem(m_eventTypes[i], false, OnAddNewSelected, i);
-			else
-				menu.AddDisabledItem(m_eventTypes[i]);
-		}
-		menu.ShowAsContext ();
-		Event.current.Use();
-	}
 
 	//---------------------------------------------------------------------------------------------------------
 	void PlayAnimation(EventAnimationType _type)
@@ -156,7 +192,36 @@ public class EventAnimatorEditor : Editor
 	}
 
 	//---------------------------------------------------------------------------------------------------------
-	void OnAddNewSelected(object index)
+	void OnAddNewAnimationData(object index)
+	{
+		var selection = (AnimationType)(int)index;
+		var animation = m_eventAnimations.GetArrayElementAtIndex(m_selectedEventAnim);
+		string typeName;
+
+		//names here must match parameter names in EventAnimation
+		switch (selection)
+		{
+		default:
+		case AnimationType.NullOrLength:
+			return;
+		case AnimationType.Scale:
+			typeName = "ScaleAnims";
+			break;
+		case AnimationType.Position:
+			typeName = "PosAnims";
+			break;
+		case AnimationType.Rotation:
+			typeName = "RotAnims";
+			break;
+		}
+
+		var dataList = animation.FindPropertyRelative (typeName);
+		dataList.arraySize += 1;
+		serializedObject.ApplyModifiedProperties();
+	}
+
+	//---------------------------------------------------------------------------------------------------------
+	void OnAddNewEventAnimation(object index)
 	{
 		int selected = (int)index;
 

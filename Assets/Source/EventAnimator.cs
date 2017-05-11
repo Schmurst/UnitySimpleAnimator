@@ -28,9 +28,7 @@ public enum EventAnimationType
 public class EventAnimation
 {
 	public EventAnimationType 	Type;
-	public AnimationScale[]		ScaleData;
-	public AnimationPosition[] 	PositionData;
-	public AnimationRotation[] 	RotationData;
+	public AnimationScale[]		ScaleAnims;
 }
 
 //---------------------------------------------------------------------------------------------------------
@@ -76,9 +74,9 @@ public class EventAnimator : 	MonoBehaviour,
 		Action onComplete = () => {++completed;};
 		var waitForAnimsToFinish = new WaitUntil(()=>{return started == completed;});
 
-		for (int i = 0; i < _data.ScaleData.Length; i++)
+		for (int i = 0; i < _data.ScaleAnims.Length; i++)
 		{
-			animations.Add (StartCoroutine (_data.ScaleData [i].Co_Animate (transform, onComplete)));
+			animations.Add (StartCoroutine (_data.ScaleAnims[i].Co_Animate (transform, onComplete)));
 			++started;
 		}
 
@@ -112,7 +110,7 @@ public class EventAnimator : 	MonoBehaviour,
 			{
 				var animData = m_eventAnimations [i];
 
-				foreach (var anim in animData.ScaleData)
+				foreach (var anim in animData.ScaleAnims)
 					m_editorRoutines.Add (anim.Co_Animate(transform, null));
 
 				EditorApplication.update += Editor_Update;

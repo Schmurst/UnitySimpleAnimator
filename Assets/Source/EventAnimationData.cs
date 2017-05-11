@@ -4,6 +4,24 @@ using System.Collections;
 using System.Collections.Generic;
 
 //---------------------------------------------------------------------------------------------------------
+public interface IAnimation
+{
+	AnimationType Type { get;}
+	bool IsValid ();
+	IEnumerator Co_Animate (Transform _target, System.Action _onComplete);
+}
+
+public enum AnimationType
+{
+	Scale,
+	Position,
+	Rotation,
+
+	// length
+	NullOrLength,
+}
+
+//---------------------------------------------------------------------------------------------------------
 [Serializable]
 public abstract class AnimationBase
 {
@@ -13,6 +31,7 @@ public abstract class AnimationBase
 	[SerializeField] protected float delay = 0f;
 
 	protected Transform target;
+	public virtual AnimationType Type { get { return AnimationType.NullOrLength; } }
 
 	#if UNITY_EDITOR
 	const float s_editorDeltaTime = 1f / 60f;
@@ -65,6 +84,8 @@ public class AnimationScale : AnimationBase
 	[Tooltip("The y value of scale during the animation")]
 	[SerializeField] protected AnimationCurve yCurve;
 
+	public override AnimationType Type {get {return AnimationType.Scale;}}
+
 	//---------------------------------------------------------------------------------------------------------
 	void UpdateScale(float _pcnt)
 	{
@@ -108,6 +129,8 @@ public class AnimationPosition : AnimationBase
 	[Tooltip("The y position during the animation; 0 is the initial value, +1 is the offset seet by the yOffsetMax parameter")]
 	[SerializeField] protected AnimationCurve yCurve;
 
+	public override AnimationType Type {get {return AnimationType.Position;}}
+
 	//---------------------------------------------------------------------------------------------------------
 	public override IEnumerator Co_Animate(Transform _target, Action _onComplete)
 	{
@@ -147,6 +170,8 @@ public class AnimationRotation : AnimationBase
 {
 	[Tooltip("The rotation around z during the animation where +1 is full turn clockwise")]
 	[SerializeField] protected AnimationCurve zRotationCurve;
+
+	public override AnimationType Type {get {return AnimationType.Rotation;}}
 
 	//---------------------------------------------------------------------------------------------------------
 	void UpdateRotation(float _pcnt, float _startZRot)
