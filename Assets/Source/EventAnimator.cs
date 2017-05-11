@@ -42,58 +42,27 @@ public class EventAnimator : 	MonoBehaviour,
 								IPointerClickHandler
 {
 	[SerializeField] List<EventAnimation> m_eventAnimations = new List<EventAnimation>();
-	private Coroutine m_currentAnimations;
+	private Coroutine m_currentAnimation;
 
 	//---------------------------------------------------------------------------------------------------------
-	void OnEnable()
-	{
-		Execute (EventAnimationType.onEnable);
-	}
-
-	//---------------------------------------------------------------------------------------------------------
-	public void OnPointerEnter(PointerEventData _baseEventData)
-	{
-		Execute (EventAnimationType.pointerEnter);
-	}
-		
-	//---------------------------------------------------------------------------------------------------------
-	public void OnPointerExit (PointerEventData eventData)
-	{
-		Execute (EventAnimationType.pointerExit);
-	}
-
-	//---------------------------------------------------------------------------------------------------------
-	public void OnPointerDown (PointerEventData eventData)
-	{
-		Execute (EventAnimationType.pointerDown);
-	}
-
-	//---------------------------------------------------------------------------------------------------------
-	public void OnPointerUp (PointerEventData eventData)
-	{
-		Execute (EventAnimationType.pointerUp);
-	}
-
-	//---------------------------------------------------------------------------------------------------------
-	public void OnPointerClick (PointerEventData eventData)
-	{
-		Execute (EventAnimationType.pointerClick);
-	}
+	void OnEnable() { Execute (EventAnimationType.onEnable);}
+	public void OnPointerEnter	(PointerEventData eventData){Execute (EventAnimationType.pointerEnter);}
+	public void OnPointerExit 	(PointerEventData eventData){Execute (EventAnimationType.pointerExit);}
+	public void OnPointerDown 	(PointerEventData eventData){Execute (EventAnimationType.pointerDown);}
+	public void OnPointerUp  	(PointerEventData eventData){Execute (EventAnimationType.pointerUp);}
+	public void OnPointerClick 	(PointerEventData eventData){Execute (EventAnimationType.pointerClick);}
 
 	//---------------------------------------------------------------------------------------------------------
 	void Execute(EventAnimationType _type)
 	{
-		if (m_currentAnimations != null)
-		{
-			StopCoroutine (m_currentAnimations);
-			m_currentAnimations = null;
-		}
+		if (m_currentAnimation != null)
+			return;
 
 		for (int i = 0; i < m_eventAnimations.Count; i++)
 		{
 			if (m_eventAnimations [i].Type == _type)
 			{
-				m_currentAnimations = StartCoroutine(Co_Animate (m_eventAnimations [i]));
+				m_currentAnimation = StartCoroutine(Co_Animate (m_eventAnimations [i]));
 				return;
 			}
 		}
@@ -103,10 +72,19 @@ public class EventAnimator : 	MonoBehaviour,
 	IEnumerator Co_Animate(EventAnimation _data)
 	{
 		var animations = new List<Coroutine> ();
-		for (int i = 0; i < _data.ScaleData.Length; i++)
-			animations.Add(StartCoroutine (_data.ScaleData[i].Co_Animate(transform, null)));
+		int started = 0, completed = 0;
+		Action onComplete = () => {++completed;};
+		var waitForAnimsToFinish = new WaitUntil(()=>{return started == completed;});
 
-		yield return null;
+		for (int i = 0; i < _data.ScaleData.Length; i++)
+		{
+			animations.Add (StartCoroutine (_data.ScaleData [i].Co_Animate (transform, onComplete)));
+			++started;
+		}
+
+		yield return waitForAnimsToFinish;
+
+		m_currentAnimation = null;
 	}
 
 	//---------------------------------------------------------------------------------------------------------
