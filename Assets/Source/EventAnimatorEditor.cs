@@ -4,7 +4,6 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
-
 using UnityEditor;
 [CustomEditor (typeof(EventAnimator))]
 public class EventAnimatorEditor : Editor
@@ -14,6 +13,15 @@ public class EventAnimatorEditor : Editor
 	SerializedProperty m_eventAnimations;
 	List<bool> m_eventAnimVisibilities = new List<bool>();
 	int m_selectedEventAnim;
+
+	// must be kept in same order as AnimationType
+	// and should be kept uptodate with eventAnimation
+	static List<string> m_eventAnimMembers = new List<string>
+	{
+		"m_scaleAnims",
+		"m_positionAnims",
+		"m_rotationAnims"
+	};
 
 	//---------------------------------------------------------------------------------------------------------
 	void OnEnable()
@@ -110,7 +118,7 @@ public class EventAnimatorEditor : Editor
 	//---------------------------------------------------------------------------------------------------------
 	void DrawAnimationData(SerializedProperty _eventAnim, ref bool _toBeRemoved, int _idx)
 	{
-		var type = (EventAnimationType)_eventAnim.FindPropertyRelative ("Type").enumValueIndex;
+		var type = (EventAnimationType)_eventAnim.FindPropertyRelative ("m_type").enumValueIndex;
 		string typeName = type.ToString ();
 
 		bool play = false;
@@ -121,17 +129,13 @@ public class EventAnimatorEditor : Editor
 		EditorGUI.indentLevel++;
 		if (show)
 		{
-			var anims = (_eventAnim.FindPropertyRelative("ScaleAnims"));
-			if(anims.arraySize > 0)
-				EditorList.Display (anims);
-
-			anims = (_eventAnim.FindPropertyRelative("PositionAnims"));
-			if(anims.arraySize > 0)
-				EditorList.Display (anims);
-
-			anims = (_eventAnim.FindPropertyRelative("RotationAnims"));
-			if(anims.arraySize > 0)
-				EditorList.Display (anims);
+			SerializedProperty anims;
+			for (int i = 0; i < m_eventAnimMembers.Count; i++)
+			{
+				anims = _eventAnim.FindPropertyRelative (m_eventAnimMembers [i]);
+				if(anims.arraySize > 0)
+					EditorList.Display (anims);
+			}
 		}
 		EditorGUI.indentLevel--;
 
@@ -191,27 +195,13 @@ public class EventAnimatorEditor : Editor
 	//---------------------------------------------------------------------------------------------------------
 	void OnAddNewAnimationData(object index)
 	{
-		var selection = (AnimationType)(int)index;
+		var selection = (int)index;
 		var animation = m_eventAnimations.GetArrayElementAtIndex(m_selectedEventAnim);
-		string typeName;
 
-		//names here must match parameter names in EventAnimation
-		switch (selection)
-		{
-		default:
-		case AnimationType.NullOrLength:
+		if (selection < 0 && selection >= m_eventAnimMembers.Count)
 			return;
-		case AnimationType.Scale:
-			typeName = "ScaleAnims";
-			break;
-		case AnimationType.Position:
-			typeName = "PositionAnims";
-			break;
-		case AnimationType.Rotation:
-			typeName = "RotationAnims";
-			break;
-		}
 
+		string typeName = m_eventAnimMembers [selection];
 		var dataList = animation.FindPropertyRelative (typeName);
 		dataList.arraySize += 1;
 		serializedObject.ApplyModifiedProperties();
@@ -224,7 +214,7 @@ public class EventAnimatorEditor : Editor
 
 		m_eventAnimations.arraySize += 1;
 		SerializedProperty animation = m_eventAnimations.GetArrayElementAtIndex(m_eventAnimations.arraySize - 1);
-		SerializedProperty type = animation.FindPropertyRelative("Type");
+		SerializedProperty type = animation.FindPropertyRelative("m_type");
 		type.enumValueIndex = selected;
 		m_eventAnimVisibilities.Add (true);
 		serializedObject.ApplyModifiedProperties();

@@ -23,7 +23,7 @@ public enum AnimationType
 
 //---------------------------------------------------------------------------------------------------------
 [Serializable]
-public abstract class AnimationBase
+public abstract class AnimationBase : IAnimation
 {
 	[Tooltip("Duration of the Animation in seconds")]
 	[SerializeField] protected float duration;

@@ -27,10 +27,37 @@ public enum EventAnimationType
 [Serializable]
 public class EventAnimation
 {
-	public EventAnimationType 	Type;
-	public AnimationScale[]		ScaleAnims;
-	public AnimationScale[]		PositionAnims;
-	public AnimationScale[]		RotationAnims;
+	// when changing these must update paramter names in EventAnimatorEditor
+	[SerializeField] EventAnimationType 	m_type = EventAnimationType.nullOrLength;
+	[SerializeField] AnimationScale[]		m_scaleAnims = null;
+	[SerializeField] AnimationPosition[]	m_positionAnims = null;
+	[SerializeField] AnimationRotation[]	m_rotationAnims = null;
+
+	public EventAnimationType Type { get { return m_type; } }
+
+	//---------------------------------------------------------------------------------------------------------
+	public IAnimation[] GetAnimations()
+	{
+		int num = m_scaleAnims != null ? m_scaleAnims.Length : 0;
+		num += m_positionAnims != null ? m_positionAnims.Length : 0;
+		num += m_rotationAnims != null ? m_rotationAnims.Length : 0;
+		var anims = new IAnimation[num];
+
+		int i = 0;
+		if(m_scaleAnims != null)
+			for (; i < m_scaleAnims.Length; i++)
+				anims [i] = (IAnimation)m_scaleAnims [i];
+
+		if(m_positionAnims != null)
+			for (; i < m_positionAnims.Length; i++)
+				anims [i] = (IAnimation)m_positionAnims [i];
+
+		if(m_rotationAnims != null)
+			for (; i < m_rotationAnims.Length; i++)
+				anims [i] = (IAnimation)m_rotationAnims[i];
+
+		return anims;
+	}
 }
 
 //---------------------------------------------------------------------------------------------------------
@@ -75,10 +102,11 @@ public class EventAnimator : 	MonoBehaviour,
 		int started = 0, completed = 0;
 		Action onComplete = () => {++completed;};
 		var waitForAnimsToFinish = new WaitUntil(()=>{return started == completed;});
+		var allAnims = _data.GetAnimations();
 
-		for (int i = 0; i < _data.ScaleAnims.Length; i++)
+		for (int i = 0; i < allAnims.Length; i++)
 		{
-			animations.Add (StartCoroutine (_data.ScaleAnims[i].Co_Animate (transform, onComplete)));
+			animations.Add (StartCoroutine (allAnims[i].Co_Animate (transform, onComplete)));
 			++started;
 		}
 
@@ -110,9 +138,9 @@ public class EventAnimator : 	MonoBehaviour,
 		{
 			if (m_eventAnimations [i].Type == _type)
 			{
-				var animData = m_eventAnimations [i];
+				var animData = m_eventAnimations [i].GetAnimations();
 
-				foreach (var anim in animData.ScaleAnims)
+				foreach (var anim in animData)
 					m_editorRoutines.Add (anim.Co_Animate(transform, null));
 
 				EditorApplication.update += Editor_Update;
