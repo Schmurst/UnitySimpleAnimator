@@ -50,6 +50,7 @@ public class EventAnimatorEditor : Editor
 		bool selectedForRemoval = false;
 		for (int i = 0; i < m_eventAnimations.arraySize; i++)
 		{
+			EditorGUILayout.Space ();
 			DrawAnimationData (m_eventAnimations.GetArrayElementAtIndex (i), ref selectedForRemoval, i);
 			if (selectedForRemoval)
 				toBeRemoved = i;
@@ -120,7 +121,17 @@ public class EventAnimatorEditor : Editor
 		EditorGUI.indentLevel++;
 		if (show)
 		{
-			EditorGUILayout.PropertyField (_eventAnim.FindPropertyRelative("ScaleAnims"), true);
+			var anims = (_eventAnim.FindPropertyRelative("ScaleAnims"));
+			if(anims.arraySize > 0)
+				EditorList.Display (anims);
+
+			anims = (_eventAnim.FindPropertyRelative("PositionAnims"));
+			if(anims.arraySize > 0)
+				EditorList.Display (anims);
+
+			anims = (_eventAnim.FindPropertyRelative("RotationAnims"));
+			if(anims.arraySize > 0)
+				EditorList.Display (anims);
 		}
 		EditorGUI.indentLevel--;
 
@@ -194,10 +205,10 @@ public class EventAnimatorEditor : Editor
 			typeName = "ScaleAnims";
 			break;
 		case AnimationType.Position:
-			typeName = "PosAnims";
+			typeName = "PositionAnims";
 			break;
 		case AnimationType.Rotation:
-			typeName = "RotAnims";
+			typeName = "RotationAnims";
 			break;
 		}
 

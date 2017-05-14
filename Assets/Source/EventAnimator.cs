@@ -29,6 +29,8 @@ public class EventAnimation
 {
 	public EventAnimationType 	Type;
 	public AnimationScale[]		ScaleAnims;
+	public AnimationScale[]		PositionAnims;
+	public AnimationScale[]		RotationAnims;
 }
 
 //---------------------------------------------------------------------------------------------------------

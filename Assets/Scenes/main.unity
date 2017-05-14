@@ -118,6 +118,7 @@ GameObject:
   - component: {fileID: 305687726}
   - component: {fileID: 305687728}
   - component: {fileID: 305687727}
+  - component: {fileID: 305687730}
   - component: {fileID: 305687729}
   m_Layer: 5
   m_Name: Image
@@ -185,64 +186,41 @@ MonoBehaviour:
   m_GameObject: {fileID: 305687725}
   m_Enabled: 1
   m_EditorHideFlags: 0
+  m_Script: {fileID: -1862395651, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Delegates: []
+  delegates: []
+--- !u!114 &305687730
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 305687725}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 96ae1fd1096117f46b664707e38daff8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   m_eventAnimations:
   - Type: 3
-    ScaleData:
-    - duration: 0.5
+    ScaleAnims:
+    - duration: 0
       delay: 0
       xCurve:
         serializedVersion: 2
-        m_Curve:
-        - serializedVersion: 2
-          time: 0
-          value: 1
-          inSlope: 0
-          outSlope: 0
-          tangentMode: 0
-        - serializedVersion: 2
-          time: 0.5
-          value: 1.2
-          inSlope: 0
-          outSlope: 0
-          tangentMode: 0
-        - serializedVersion: 2
-          time: 1
-          value: 1
-          inSlope: 0
-          outSlope: 0
-          tangentMode: 0
-        m_PreInfinity: 2
-        m_PostInfinity: 2
+        m_Curve: []
+        m_PreInfinity: 0
+        m_PostInfinity: 0
         m_RotationOrder: 0
       yCurve:
         serializedVersion: 2
-        m_Curve:
-        - serializedVersion: 2
-          time: 0
-          value: 1
-          inSlope: 0
-          outSlope: 0
-          tangentMode: 0
-        - serializedVersion: 2
-          time: 0.5
-          value: 1.2
-          inSlope: 0
-          outSlope: 0
-          tangentMode: 0
-        - serializedVersion: 2
-          time: 1
-          value: 1
-          inSlope: 0
-          outSlope: 0
-          tangentMode: 0
-        m_PreInfinity: 2
-        m_PostInfinity: 2
+        m_Curve: []
+        m_PreInfinity: 0
+        m_PostInfinity: 0
         m_RotationOrder: 0
-    PositionData: []
-    RotationData: []
+    PositionAnims: []
+    RotationAnims: []
 --- !u!1 &620485068
 GameObject:
   m_ObjectHideFlags: 0
