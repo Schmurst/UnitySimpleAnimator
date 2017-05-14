@@ -203,24 +203,62 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_eventAnimations:
-  - Type: 3
-    ScaleAnims:
-    - duration: 0
+  - m_type: 3
+    m_scaleAnims: []
+    m_positionAnims:
+    - duration: 0.5
       delay: 0
+      xOffsetMax: 5
+      yOffsetMax: 5
       xCurve:
         serializedVersion: 2
-        m_Curve: []
-        m_PreInfinity: 0
-        m_PostInfinity: 0
+        m_Curve:
+        - serializedVersion: 2
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+        - serializedVersion: 2
+          time: 0.5
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+        - serializedVersion: 2
+          time: 1
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
         m_RotationOrder: 0
       yCurve:
         serializedVersion: 2
-        m_Curve: []
-        m_PreInfinity: 0
-        m_PostInfinity: 0
+        m_Curve:
+        - serializedVersion: 2
+          time: 0
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+        - serializedVersion: 2
+          time: 0.5
+          value: 1
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+        - serializedVersion: 2
+          time: 1
+          value: 0
+          inSlope: 0
+          outSlope: 0
+          tangentMode: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
         m_RotationOrder: 0
-    PositionAnims: []
-    RotationAnims: []
+    m_rotationAnims: []
 --- !u!1 &620485068
 GameObject:
   m_ObjectHideFlags: 0

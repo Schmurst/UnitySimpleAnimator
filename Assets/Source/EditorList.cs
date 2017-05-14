@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
-// Lidted from:http://catlikecoding.com/unity/tutorials/editor/custom-list/ 
+// Lifted from:http://catlikecoding.com/unity/tutorials/editor/custom-list/ 
 public static class EditorList
 {
 	public static void Display(SerializedProperty _list, bool _showSize = true)
