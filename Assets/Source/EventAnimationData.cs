@@ -11,6 +11,7 @@ public interface IAnimation
 	IEnumerator Co_Animate (Transform _target, System.Action _onComplete);
 }
 
+// If adding new types remember to update both event animation and event animator editor
 public enum AnimationType
 {
 	Scale,
@@ -49,7 +50,7 @@ public abstract class AnimationBase : IAnimation
 	protected virtual void UpdateAnimationTime(ref float time)
 	{
 		#if UNITY_EDITOR
-		// update at 30fps when not in play mode
+		// update at 60fps when not in play mode
 		if(!Application.isPlaying)
 			time += s_editorDeltaTime;
 		else
@@ -83,6 +84,8 @@ public class AnimationScale : AnimationBase
 	[SerializeField] protected AnimationCurve xCurve;
 	[Tooltip("The y value of scale during the animation")]
 	[SerializeField] protected AnimationCurve yCurve;
+	[Tooltip("The z value of scale during the animation")]
+	[SerializeField] protected AnimationCurve zCurve;
 
 	public override AnimationType Type {get {return AnimationType.Scale;}}
 
@@ -92,8 +95,9 @@ public class AnimationScale : AnimationBase
 		var scale = Vector3.one;
 		scale.x = xCurve.Evaluate (_pcnt);
 		scale.y = yCurve.Evaluate (_pcnt);
+		scale.z = zCurve.Evaluate (_pcnt);
 		target.localScale = scale;
-	}
+	}	
 
 	//---------------------------------------------------------------------------------------------------------
 	public override IEnumerator Co_Animate(Transform _target, Action _onComplete)
@@ -120,14 +124,14 @@ public class AnimationScale : AnimationBase
 [Serializable]
 public class AnimationPosition : AnimationBase
 {
-	[Tooltip("The x offset which is refered to by a value of +1 in the xCurve parameter")]
-	[SerializeField] protected float xOffsetMax = 0f;
-	[Tooltip("The y offset which is refered to by a value of +1 in the yCurve parameter")]
-	[SerializeField] protected float yOffsetMax = 0f;
+	[Tooltip("The offset in each dimention which is refered to by a value of +1 in the curve parameter")]
+	[SerializeField] protected Vector3 OffsetMax;
 	[Tooltip("The x position during the animation; 0 is the initial value, +1 is the offset seet by the xOffsetMax parameter")]
 	[SerializeField] protected AnimationCurve xCurve;
 	[Tooltip("The y position during the animation; 0 is the initial value, +1 is the offset seet by the yOffsetMax parameter")]
 	[SerializeField] protected AnimationCurve yCurve;
+	[Tooltip("The z position during the animation; 0 is the initial value, +1 is the offset seet by the zOffsetMax parameter")]
+	[SerializeField] protected AnimationCurve zCurve;
 
 	public override AnimationType Type {get {return AnimationType.Position;}}
 
@@ -140,7 +144,7 @@ public class AnimationPosition : AnimationBase
 		bool isComplete = false;
 
 		Vector3 start = target.position;
-		Vector3 end = new Vector2 (start.x + xOffsetMax, start.y + yOffsetMax);
+		Vector3 end = start + OffsetMax;
 
 		while(!isComplete)
 		{
@@ -155,11 +159,12 @@ public class AnimationPosition : AnimationBase
 	}
 
 	//---------------------------------------------------------------------------------------------------------
-	void UpdatePosition(float _pcnt, Vector2 _start, Vector2 _end)
+	void UpdatePosition(float _pcnt, Vector3 _start, Vector3 _end)
 	{
-		Vector2 position = Vector2.one;
+		Vector3 position = Vector3.one;
 		position.x = Mathf.LerpUnclamped (_start.x, _end.x, xCurve.Evaluate(_pcnt));
 		position.y = Mathf.LerpUnclamped (_start.y, _end.y, yCurve.Evaluate(_pcnt));
+		position.z = Mathf.LerpUnclamped (_start.z, _end.z, zCurve.Evaluate(_pcnt));
 		target.position = position;
 	}
 }
@@ -168,16 +173,23 @@ public class AnimationPosition : AnimationBase
 [Serializable]
 public class AnimationRotation : AnimationBase
 {
-	[Tooltip("The rotation around z during the animation where +1 is full turn clockwise")]
-	[SerializeField] protected AnimationCurve zRotationCurve;
+	[Tooltip("The rotation around x during the animation where +1 is full turn anticlockwise")]
+	[SerializeField] protected AnimationCurve xCurve;
+	[Tooltip("The rotation around y during the animation where +1 is full turn anticlockwise")]
+	[SerializeField] protected AnimationCurve yCurve;
+	[Tooltip("The rotation around z during the animation where +1 is full turn anticlockwise")]
+	[SerializeField] protected AnimationCurve zCurve;
 
 	public override AnimationType Type {get {return AnimationType.Rotation;}}
 
 	//---------------------------------------------------------------------------------------------------------
-	void UpdateRotation(float _pcnt, float _startZRot)
+	void UpdateRotation(float _pcnt, Vector3 _startRot)
 	{
-		float z = _startZRot + zRotationCurve.Evaluate (_pcnt) * 360f;
-		target.rotation = Quaternion.Euler (0f, 0f, z);
+		var rot = Vector3.zero;
+		rot.x = _startRot.x + xCurve.Evaluate (_pcnt) * 360f;
+		rot.y = _startRot.y + yCurve.Evaluate (_pcnt) * 360f;
+		rot.z = _startRot.z + zCurve.Evaluate (_pcnt) * 360f;
+		target.rotation = Quaternion.Euler (rot);
 	}
 
 	//---------------------------------------------------------------------------------------------------------
@@ -188,13 +200,13 @@ public class AnimationRotation : AnimationBase
 		float tPcnt = 0f;
 		bool isComplete = false;
 
-		float zStart = target.rotation.z;
+		Vector3 start = target.rotation.eulerAngles;
 
 		while(!isComplete)
 		{
 			UpdateAnimationTime (ref time);
 			UpdateAnimationProgress (ref isComplete, out tPcnt, time);
-			UpdateRotation (tPcnt, zStart);
+			UpdateRotation (tPcnt, start);
 			yield return null;
 		}
 
