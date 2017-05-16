@@ -133,8 +133,10 @@ public class EventAnimatorEditor : Editor
 			for (int i = 0; i < m_eventAnimMembers.Count; i++)
 			{
 				anims = _eventAnim.FindPropertyRelative (m_eventAnimMembers [i]);
-				if(anims.arraySize > 0)
-					EditorList.Display (anims);
+				if (anims.arraySize <= 0)
+					continue;
+				var options = EditorListOption.ListLabel | EditorListOption.ElementLabels | EditorListOption.AllButtons;
+				EditorList.Display (anims, options);
 			}
 		}
 		EditorGUI.indentLevel--;
