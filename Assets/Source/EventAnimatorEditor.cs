@@ -1,3 +1,4 @@
+#if UNITY_EDITOR
 using System;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,6 +14,7 @@ public class EventAnimatorEditor : Editor
 	SerializedProperty m_eventAnimations;
 	List<bool> m_eventAnimVisibilities = new List<bool>();
 	int m_selectedEventAnim;
+	string[] m_eventNames;
 
 	// must be kept in same order as AnimationType
 	// and should be kept uptodate with eventAnimation
@@ -27,18 +29,18 @@ public class EventAnimatorEditor : Editor
 	void OnEnable()
 	{
 		m_eventAnimations = serializedObject.FindProperty ("m_eventAnimations");
-		string[] eventNames = Enum.GetNames (typeof(EventAnimationType));
+		m_eventNames = Enum.GetNames (typeof(EventAnimationType));
 		string[] dataNames = Enum.GetNames(typeof(AnimationType));
-		m_eventTypes = new GUIContent[eventNames.Length - 1];
+		m_eventTypes = new GUIContent[m_eventNames.Length - 1];
 		m_dataTypes = new GUIContent[dataNames.Length - 1];
 		m_eventAnimVisibilities.Clear ();
 
 		for (int i = 0; i < m_eventAnimations.arraySize; i++)
 			m_eventAnimVisibilities.Add (true);
 
-		for (int i = 0; i < eventNames.Length; i++)
-			if(eventNames[i] != EventAnimationType.nullOrLength.ToString())
-				m_eventTypes [i] = new GUIContent (eventNames [i]);
+		for (int i = 0; i < m_eventNames.Length; i++)
+			if(m_eventNames[i] != EventAnimationType.nullOrLength.ToString())
+				m_eventTypes [i] = new GUIContent (m_eventNames [i]);
 
 		for (int i = 0; i < dataNames.Length; i++)
 			if(dataNames[i] != AnimationType.NullOrLength.ToString())
@@ -169,7 +171,9 @@ public class EventAnimatorEditor : Editor
 		// start top bar
 		EditorGUILayout.BeginHorizontal ();
 		EditorGUIUtility.labelWidth = 20f;
-		EditorGUILayout.LabelField (_typeName);
+		//EditorGUILayout.LabelField (_typeName);
+		var types = (_eventAnim.FindPropertyRelative ("m_type"));
+		types.intValue = EditorGUILayout.MaskField(types.intValue, m_eventNames, singleLineHeight);
 		if (GUILayout.Button ("Add", singleLineHeight))
 			ShowAddAnimationDataMenu (_eventAnim, _idx);
 		if (GUILayout.Button (_shown ? "Hide" : "Show", singleLineHeight))
@@ -222,3 +226,4 @@ public class EventAnimatorEditor : Editor
 		serializedObject.ApplyModifiedProperties();
 	}
 }
+#endif

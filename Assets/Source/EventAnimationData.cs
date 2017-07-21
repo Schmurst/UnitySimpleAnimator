@@ -11,7 +11,7 @@ public interface IAnimation
 	IEnumerator Co_Animate (Transform _target, System.Action _onComplete);
 }
 
-// If adding new types remember to update both event animation and event animator editor
+// If adding new types remember to update both EventAnimation and EventAnimatorEditor
 public enum AnimationType
 {
 	Scale,
@@ -26,20 +26,24 @@ public enum AnimationType
 [Serializable]
 public abstract class AnimationBase : IAnimation
 {
+	#if UNITY_EDITOR
+	const float s_editorDeltaTime = 1f / 60f;
+	#endif
+
 	[Tooltip("Duration of the Animation in seconds")]
 	[SerializeField] protected float duration;
 	[Tooltip("Delay the start of this animation in seconds")]
 	[SerializeField] protected float delay = 0f;
 
 	protected Transform target;
-	public virtual AnimationType Type { get { return AnimationType.NullOrLength; } }
-
-	#if UNITY_EDITOR
-	const float s_editorDeltaTime = 1f / 60f;
-	#endif
+	protected bool m_isWaitingForDelay = false;
 
 	//---------------------------------------------------------------------------------------------------------
-	public abstract IEnumerator Co_Animate (Transform _target, System.Action _onComplete);
+	public virtual AnimationType Type { get { return AnimationType.NullOrLength; } }
+	protected bool ShouldUpdateTransform { get { return !m_isWaitingForDelay; } }
+	//---------------------------------------------------------------------------------------------------------
+	protected virtual void UpdateTargetTransform(float _pcnt){}
+	protected virtual void OnAnimationInitialisation(){}
 	//---------------------------------------------------------------------------------------------------------
 	public virtual bool IsValid()
 	{
@@ -54,10 +58,8 @@ public abstract class AnimationBase : IAnimation
 		if(!Application.isPlaying)
 			time += s_editorDeltaTime;
 		else
-			time += Time.deltaTime;
-		#else
-		time += Time.deltaTime;
 		#endif
+		time += Time.deltaTime;
 	}
 
 	//---------------------------------------------------------------------------------------------------------
@@ -68,11 +70,40 @@ public abstract class AnimationBase : IAnimation
 
 		if (delay > 0f && _currentTime < delay)
 		{
+			m_isWaitingForDelay = true;
 			_pcnt = 0f;
 			return;
 		}
-
+		else if (delay > 0f && _currentTime > delay && m_isWaitingForDelay)
+		{
+			m_isWaitingForDelay = false;
+		}
+			
 		_pcnt = Mathf.Min((_currentTime - delay) / duration, 1f);
+	}
+
+	//---------------------------------------------------------------------------------------------------------
+	public virtual IEnumerator Co_Animate (Transform _target, System.Action _onComplete)
+	{
+		target = _target;
+		float time = 0f;
+		float tPcnt = 0f;
+		bool isComplete = false;
+
+		OnAnimationInitialisation ();
+
+		while(!isComplete)
+		{
+			UpdateAnimationTime (ref time);
+			UpdateAnimationProgress (ref isComplete, out tPcnt, time);
+			if (ShouldUpdateTransform)
+				UpdateTargetTransform (tPcnt);
+			
+			yield return null;
+		}
+
+		if (_onComplete != null)
+			_onComplete ();
 	}
 }
 
@@ -90,33 +121,14 @@ public class AnimationScale : AnimationBase
 	public override AnimationType Type {get {return AnimationType.Scale;}}
 
 	//---------------------------------------------------------------------------------------------------------
-	void UpdateScale(float _pcnt)
+	// Update Local Scale
+	protected override void UpdateTargetTransform (float _pcnt)
 	{
 		var scale = Vector3.one;
 		scale.x = xCurve.Evaluate (_pcnt);
 		scale.y = yCurve.Evaluate (_pcnt);
 		scale.z = zCurve.Evaluate (_pcnt);
 		target.localScale = scale;
-	}	
-
-	//---------------------------------------------------------------------------------------------------------
-	public override IEnumerator Co_Animate(Transform _target, Action _onComplete)
-	{
-		target = _target;
-		float time = 0f;
-		float tPcnt = 0f;
-		bool isComplete = false;
-
-		while(!isComplete)
-		{
-			UpdateAnimationTime (ref time);
-			UpdateAnimationProgress (ref isComplete, out tPcnt, time);
-			UpdateScale (tPcnt);
-			yield return null;
-		}
-
-		if (_onComplete != null)
-			_onComplete ();
 	}
 }
 
@@ -135,36 +147,23 @@ public class AnimationPosition : AnimationBase
 
 	public override AnimationType Type {get {return AnimationType.Position;}}
 
+	Vector3 m_start;
+	Vector3 m_end;
+
 	//---------------------------------------------------------------------------------------------------------
-	public override IEnumerator Co_Animate(Transform _target, Action _onComplete)
+	protected override void OnAnimationInitialisation ()
 	{
-		target = _target;
-		float time = 0f;
-		float tPcnt = 0f;
-		bool isComplete = false;
-
-		Vector3 start = target.position;
-		Vector3 end = start + OffsetMax;
-
-		while(!isComplete)
-		{
-			UpdateAnimationTime (ref time);
-			UpdateAnimationProgress (ref isComplete, out tPcnt, time);
-			UpdatePosition (tPcnt, start, end);
-			yield return null;
-		}
-
-		if (_onComplete != null)
-			_onComplete ();
+		m_start = target.position;
+		m_end = m_start + OffsetMax;
 	}
 
 	//---------------------------------------------------------------------------------------------------------
-	void UpdatePosition(float _pcnt, Vector3 _start, Vector3 _end)
+	protected override void UpdateTargetTransform (float _pcnt)
 	{
 		Vector3 position = Vector3.one;
-		position.x = Mathf.LerpUnclamped (_start.x, _end.x, xCurve.Evaluate(_pcnt));
-		position.y = Mathf.LerpUnclamped (_start.y, _end.y, yCurve.Evaluate(_pcnt));
-		position.z = Mathf.LerpUnclamped (_start.z, _end.z, zCurve.Evaluate(_pcnt));
+		position.x = Mathf.LerpUnclamped (m_start.x, m_end.x, xCurve.Evaluate(_pcnt));
+		position.y = Mathf.LerpUnclamped (m_start.y, m_end.y, yCurve.Evaluate(_pcnt));
+		position.z = Mathf.LerpUnclamped (m_start.z, m_end.z, zCurve.Evaluate(_pcnt));
 		target.position = position;
 	}
 }
@@ -181,36 +180,21 @@ public class AnimationRotation : AnimationBase
 	[SerializeField] protected AnimationCurve zCurve;
 
 	public override AnimationType Type {get {return AnimationType.Rotation;}}
+	Vector3 m_start;
 
 	//---------------------------------------------------------------------------------------------------------
-	void UpdateRotation(float _pcnt, Vector3 _startRot)
+	protected override void OnAnimationInitialisation ()
 	{
-		var rot = Vector3.zero;
-		rot.x = _startRot.x + xCurve.Evaluate (_pcnt) * 360f;
-		rot.y = _startRot.y + yCurve.Evaluate (_pcnt) * 360f;
-		rot.z = _startRot.z + zCurve.Evaluate (_pcnt) * 360f;
-		target.rotation = Quaternion.Euler (rot);
+		m_start = target.rotation.eulerAngles;
 	}
 
 	//---------------------------------------------------------------------------------------------------------
-	public override IEnumerator Co_Animate(Transform _target, Action _onComplete)
+	protected override void UpdateTargetTransform (float _pcnt)
 	{
-		target = _target;
-		float time = 0f;
-		float tPcnt = 0f;
-		bool isComplete = false;
-
-		Vector3 start = target.rotation.eulerAngles;
-
-		while(!isComplete)
-		{
-			UpdateAnimationTime (ref time);
-			UpdateAnimationProgress (ref isComplete, out tPcnt, time);
-			UpdateRotation (tPcnt, start);
-			yield return null;
-		}
-
-		if (_onComplete != null)
-			_onComplete ();
+		var rot = Vector3.zero;
+		rot.x = m_start.x + xCurve.Evaluate (_pcnt) * 360f;
+		rot.y = m_start.y + yCurve.Evaluate (_pcnt) * 360f;
+		rot.z = m_start.z + zCurve.Evaluate (_pcnt) * 360f;
+		target.rotation = Quaternion.Euler (rot);
 	}
 }

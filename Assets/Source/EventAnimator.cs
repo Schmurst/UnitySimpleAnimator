@@ -10,17 +10,18 @@ using UnityEditor;
 #endif
 
 //---------------------------------------------------------------------------------------------------------
+[System.Flags]
 public enum EventAnimationType
 {
-	onEnable,
-	pointerUp,
-	pointerDown,
-	pointerEnter,
-	pointerExit,
-	pointerClick,
+	onEnable = 1,
+	pointerUp = 2,
+	pointerDown = 4,
+	pointerEnter = 8,
+	pointerExit = 16,
+	pointerClick = 32,
 
 	// length
-	nullOrLength
+	nullOrLength = 1024,
 }
 	
 //---------------------------------------------------------------------------------------------------------
@@ -86,13 +87,8 @@ public class EventAnimator : 	MonoBehaviour,
 			return;
 
 		for (int i = 0; i < m_eventAnimations.Count; i++)
-		{
-			if (m_eventAnimations [i].Type == _type)
-			{
+			if ((m_eventAnimations [i].Type & _type) != 0)
 				m_currentAnimation = StartCoroutine(Co_Animate (m_eventAnimations [i]));
-				return;
-			}
-		}
 	}
 		
 	//---------------------------------------------------------------------------------------------------------
@@ -120,6 +116,9 @@ public class EventAnimator : 	MonoBehaviour,
 	//---------------------------------------------------------------------------------------------------------
 	#if UNITY_EDITOR
 	List<IEnumerator> m_editorRoutines = new List<IEnumerator>();
+	Vector3 m_initialPosition;
+	Quaternion m_initialRotation;
+	Vector3 m_initialScale;
 	//---------------------------------------------------------------------------------------------------------
 	void Editor_Update()
 	{
@@ -127,21 +126,30 @@ public class EventAnimator : 	MonoBehaviour,
 			if (!m_editorRoutines [i].MoveNext ())
 				m_editorRoutines.RemoveAt (i);
 
-		if (m_editorRoutines.Count == 0)
+		if (m_editorRoutines.Count == 0 || Application.isPlaying)
+		{
 			EditorApplication.update -= Editor_Update;
+			//SH: 2017-jun-24: restore trasnform
+			this.transform.position = m_initialPosition;
+			this.transform.rotation = m_initialRotation;
+			this.transform.localScale = m_initialScale;
+		}
 	}
 
 	//---------------------------------------------------------------------------------------------------------
 	public void Editor_StartAnimation(EventAnimationType _type)
 	{
+		m_initialPosition = transform.position;
+		m_initialRotation = transform.rotation;
+		m_initialScale = transform.localScale;
+
 		for (int i = 0; i < m_eventAnimations.Count; i++)
 		{
 			if (m_eventAnimations [i].Type == _type)
 			{
 				var animData = m_eventAnimations [i].GetAnimations();
-
-				foreach (var anim in animData)
-					m_editorRoutines.Add (anim.Co_Animate(transform, null));
+				for (int j = 0; j < animData.Length; j++) 
+					m_editorRoutines.Add (animData[j].Co_Animate(transform, null));
 
 				EditorApplication.update += Editor_Update;
 				return;
