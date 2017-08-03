@@ -16,22 +16,13 @@ public class EventAnimatorEditor : Editor
 	int m_selectedEventAnim;
 	string[] m_eventNames;
 
-	// must be kept in same order as AnimationType
-	// and should be kept uptodate with eventAnimation
-	static List<string> m_eventAnimMembers = new List<string>
-	{
-		"m_scaleAnims",
-		"m_positionAnims",
-		"m_rotationAnims"
-	};
-
 	//---------------------------------------------------------------------------------------------------------
 	void OnEnable()
 	{
 		m_eventAnimations = serializedObject.FindProperty ("m_eventAnimations");
 		m_eventNames = Enum.GetNames (typeof(EventAnimationType));
 		string[] dataNames = Enum.GetNames(typeof(AnimationType));
-		m_eventTypes = new GUIContent[m_eventNames.Length - 1];
+		m_eventTypes = new GUIContent[m_eventNames.Length];
 		m_dataTypes = new GUIContent[dataNames.Length - 1];
 		m_eventAnimVisibilities.Clear ();
 
@@ -39,7 +30,6 @@ public class EventAnimatorEditor : Editor
 			m_eventAnimVisibilities.Add (true);
 
 		for (int i = 0; i < m_eventNames.Length; i++)
-			if(m_eventNames[i] != EventAnimationType.nullOrLength.ToString())
 				m_eventTypes [i] = new GUIContent (m_eventNames [i]);
 
 		for (int i = 0; i < dataNames.Length; i++)
@@ -84,9 +74,7 @@ public class EventAnimatorEditor : Editor
 			EditorGUILayout.BeginHorizontal ();
 			GUILayout.FlexibleSpace ();
 			if (GUILayout.Button ("Add New Event Type", GUILayout.MaxWidth (180f)))
-			{
 				ShowAddAnimationMenu ();
-			}
 			GUILayout.FlexibleSpace ();
 			EditorGUILayout.EndHorizontal ();
 		}
@@ -132,9 +120,9 @@ public class EventAnimatorEditor : Editor
 		if (show)
 		{
 			SerializedProperty anims;
-			for (int i = 0; i < m_eventAnimMembers.Count; i++)
+			for (int i = 0; i < AnimationData.s_eventAnimMembers.Count; i++)
 			{
-				anims = _eventAnim.FindPropertyRelative (m_eventAnimMembers [i]);
+				anims = _eventAnim.FindPropertyRelative (AnimationData.s_eventAnimMembers [i]);
 				if (anims.arraySize <= 0)
 					continue;
 				var options = EditorListOption.ListLabel | EditorListOption.ElementLabels | EditorListOption.AllButtons;
@@ -144,9 +132,7 @@ public class EventAnimatorEditor : Editor
 		EditorGUI.indentLevel--;
 
 		if (play)
-		{
 			PlayAnimation (type);
-		}
 	}
 
 	//---------------------------------------------------------------------------------------------------------
@@ -204,10 +190,10 @@ public class EventAnimatorEditor : Editor
 		var selection = (int)index;
 		var animation = m_eventAnimations.GetArrayElementAtIndex(m_selectedEventAnim);
 
-		if (selection < 0 && selection >= m_eventAnimMembers.Count)
+		if (selection < 0 && selection >= AnimationData.s_eventAnimMembers.Count)
 			return;
 
-		string typeName = m_eventAnimMembers [selection];
+		string typeName = AnimationData.s_eventAnimMembers [selection];
 		var dataList = animation.FindPropertyRelative (typeName);
 		dataList.arraySize += 1;
 		serializedObject.ApplyModifiedProperties();

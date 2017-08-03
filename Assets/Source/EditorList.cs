@@ -77,7 +77,6 @@ public static class EditorList
 		bool showLabels = (_options & EditorListOption.ElementLabels)  != 0;
 		bool showButtons = (_options & EditorListOption.ElementButtons)  != 0;
 
-
 		for (int i = 0; i < _list.arraySize; i++)
 		{
 			if (showButtons)

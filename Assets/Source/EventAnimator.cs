@@ -19,46 +19,15 @@ public enum EventAnimationType
 	pointerEnter = 8,
 	pointerExit = 16,
 	pointerClick = 32,
-
-	// length
-	nullOrLength = 1024,
 }
 	
 //---------------------------------------------------------------------------------------------------------
 [Serializable]
-public class EventAnimation
+public class EventAnimation : AnimationData
 {
 	// when changing these must update paramter names in EventAnimatorEditor
-	[SerializeField] EventAnimationType 	m_type = EventAnimationType.nullOrLength;
-	[SerializeField] AnimationScale[]		m_scaleAnims = null;
-	[SerializeField] AnimationPosition[]	m_positionAnims = null;
-	[SerializeField] AnimationRotation[]	m_rotationAnims = null;
-
+	[SerializeField] EventAnimationType m_type = 0;
 	public EventAnimationType Type { get { return m_type; } }
-
-	//---------------------------------------------------------------------------------------------------------
-	public IAnimation[] GetAnimations()
-	{
-		int num = m_scaleAnims != null ? m_scaleAnims.Length : 0;
-		num += m_positionAnims != null ? m_positionAnims.Length : 0;
-		num += m_rotationAnims != null ? m_rotationAnims.Length : 0;
-		var anims = new IAnimation[num];
-
-		int i = 0;
-		if(m_scaleAnims != null)
-			for (; i < m_scaleAnims.Length; i++)
-				anims [i] = (IAnimation)m_scaleAnims [i];
-
-		if(m_positionAnims != null)
-			for (; i < m_positionAnims.Length; i++)
-				anims [i] = (IAnimation)m_positionAnims [i];
-
-		if(m_rotationAnims != null)
-			for (; i < m_rotationAnims.Length; i++)
-				anims [i] = (IAnimation)m_rotationAnims[i];
-
-		return anims;
-	}
 }
 
 //---------------------------------------------------------------------------------------------------------
