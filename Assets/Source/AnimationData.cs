@@ -68,11 +68,13 @@ public class AnimationData
 			if (GUI.Button (visBtnRect, visibility.boolValue ? "Hide" : "Show"))
 				visibility.boolValue = !visibility.boolValue;
 
-			if (!visibility.boolValue)
+			// delete this 
+			var deleteBtnRect = new Rect(position.x + position.width - 20, position.y, 20, position.height);
+			if (GUI.Button (deleteBtnRect, new GUIContent ("x", "Delete"), EditorStyles.miniButton))
 				goto End;
 
-			// delete this 
-			if (GUI.Button (position, new GUIContent ("x", "Delete"), EditorStyles.miniButton))
+
+			if (!visibility.boolValue)
 				goto End;
 
 			End:

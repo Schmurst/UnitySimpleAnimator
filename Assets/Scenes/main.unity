@@ -342,11 +342,11 @@ MonoBehaviour:
   - m_scaleAnims: []
     m_positionAnims: []
     m_rotationAnims: []
-    Editor_isVisible: 0
+    Editor_isVisible: 1
   - m_scaleAnims: []
     m_positionAnims: []
     m_rotationAnims: []
-    Editor_isVisible: 0
+    Editor_isVisible: 1
 --- !u!114 &718535980
 MonoBehaviour:
   m_ObjectHideFlags: 0
