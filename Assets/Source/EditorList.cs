@@ -55,7 +55,7 @@ public static class EditorList
 			else
 			{	
 				EditorGUILayout.PropertyField (_list);
-				EditorGUI.indentLevel++;
+				EditorGUI.indentLevel++;	
 			}
 		}
 

@@ -8,7 +8,7 @@ public interface IAnimation
 {
 	AnimationType Type { get;}
 	bool IsValid ();
-	IEnumerator Co_Animate (Transform _target, System.Action _onComplete);
+	IEnumerator Co_Animate (Transform _target, System.Action _onComplete);	
 }
 
 // If adding new types remember to update both EventAnimation and EventAnimatorEditor
@@ -43,7 +43,7 @@ public abstract class AnimationBase : IAnimation
 	protected bool ShouldUpdateTransform { get { return !m_isWaitingForDelay; } }
 	//---------------------------------------------------------------------------------------------------------
 	protected virtual void UpdateTargetTransform(float _pcnt){}
-	protected virtual void OnAnimationInitialisation(){}
+	protected virtual void OnAnimationInitialisation (){}
 	//---------------------------------------------------------------------------------------------------------
 	public virtual bool IsValid()
 	{

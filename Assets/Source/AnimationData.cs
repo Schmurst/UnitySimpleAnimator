@@ -15,7 +15,7 @@ public class AnimationData
 
 	[SerializeField] protected AnimationScale[] 	m_scaleAnims = null;
 	[SerializeField] protected AnimationPosition[] 	m_positionAnims = null;
-	[SerializeField] protected AnimationPosition[] 	m_rotationAnims = null;
+	[SerializeField] protected AnimationRotation[] 	m_rotationAnims = null;
 
 	//---------------------------------------------------------------------------------------------------------
 	public virtual IAnimation[] GetAnimations()
@@ -72,7 +72,6 @@ public class AnimationData
 			var deleteBtnRect = new Rect(position.x + position.width - 20, position.y, 20, position.height);
 			if (GUI.Button (deleteBtnRect, new GUIContent ("x", "Delete"), EditorStyles.miniButton))
 				goto End;
-
 
 			if (!visibility.boolValue)
 				goto End;

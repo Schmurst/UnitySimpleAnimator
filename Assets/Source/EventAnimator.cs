@@ -114,15 +114,11 @@ public class EventAnimator : 	MonoBehaviour,
 
 		for (int i = 0; i < m_eventAnimations.Count; i++)
 		{
-			if (m_eventAnimations [i].Type == _type)
-			{
-				var animData = m_eventAnimations [i].GetAnimations();
-				for (int j = 0; j < animData.Length; j++) 
-					m_editorRoutines.Add (animData[j].Co_Animate(transform, null));
+			var animData = m_eventAnimations [i].GetAnimations();
+			for (int j = 0; j < animData.Length; j++) 
+				m_editorRoutines.Add (animData[j].Co_Animate(transform, null));
 
-				EditorApplication.update += Editor_Update;
-				return;
-			}
+			EditorApplication.update += Editor_Update;
 		}
 	}
 	#endif
