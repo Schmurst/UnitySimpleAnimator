@@ -1,19 +1,10 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace SimpleTween
 {
-	public enum TweenType
-	{
-		Scale, 
-		Position,
-		Rotation,
-
-		NullOrLength
-	}
-
-	//--------------------------------------------------------------------------------
 	[System.Serializable]
 	public abstract class Tween : MonoBehaviour
 	{
@@ -24,7 +15,7 @@ namespace SimpleTween
 		[SerializeField] protected float m_duration = 1f;
 		[SerializeField] protected float m_delay = 0f;
 
-		protected Transform m_target;
+		protected Component m_targetRaw;
 		protected bool m_isWaitingForDelay = false;
 
 		//--------------------------------------------------------------------------------
@@ -32,6 +23,12 @@ namespace SimpleTween
 		//--------------------------------------------------------------------------------
 		protected virtual void UpdateTargetTransform(float _pcnt){}
 		protected virtual void OnAnimationInitialisation (){}
+		//--------------------------------------------------------------------------------
+		public virtual void Initialise(Component _target)
+		{
+			m_targetRaw = _target;
+		}
+		
 		//--------------------------------------------------------------------------------
 		protected virtual void UpdateAnimationTime(ref float time)
 		{
@@ -64,9 +61,8 @@ namespace SimpleTween
 		}
 
 		//---------------------------------------------------------------------------------------------------------
-		public virtual IEnumerator Co_PlayTween (Transform _target, System.Action _onComplete)
+		public virtual IEnumerator Co_PlayTween (Action _onComplete)
 		{
-			m_target = _target;
 			float time = 0f;
 			float tPcnt = 0f;
 			bool isComplete = false;

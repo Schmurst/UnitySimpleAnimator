@@ -11,7 +11,7 @@ namespace SimpleTween
 {
 	public class Tweener : MonoBehaviour
 	{
-		[SerializeField] protected List<Tween> m_tweens;
+		[SerializeField] protected List<Tween> m_tweens = new List<Tween>();
 
 		protected bool m_isTweenInProgress = false;
 
@@ -26,22 +26,23 @@ namespace SimpleTween
 		//--------------------------------------------------------------------------------
 		protected IEnumerator Co_PlayTweens()
 		{
+			Debug.LogFormat("Started Tween on {0}", name);
 			m_isTweenInProgress = true;
 
 			var animations = new List<Coroutine> ();
 			int started = 0, completed = 0;
 			Action onCompleted = ()=>{++completed;};
 			var waitForAnimsToFinish = new WaitUntil(()=>{return started == completed;});
-
+			
 			for (int i = 0; i < m_tweens.Count; i++)
 			{
-				var routine = StartCoroutine (m_tweens [i].Co_PlayTween (transform, onCompleted));
+				var routine = StartCoroutine (m_tweens [i].Co_PlayTween (onCompleted));
 				animations.Add (routine);
 				started++;
 			}
 
 			yield return waitForAnimsToFinish;
-
+			
 			m_isTweenInProgress = false;
 		}
 

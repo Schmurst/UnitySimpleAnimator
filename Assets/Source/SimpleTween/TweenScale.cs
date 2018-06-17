@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace SimpleTween
 {
-	public class TweenScale : Tween
+	public class TweenScale : TweenTransform
 	{
 		[SerializeField] protected AnimationCurve m_xCurve;
 		[SerializeField] protected AnimationCurve m_yCurve;

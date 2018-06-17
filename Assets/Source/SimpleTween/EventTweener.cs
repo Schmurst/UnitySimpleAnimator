@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -23,7 +20,7 @@ namespace SimpleTween
 	{
 		[SerializeField] Component 		m_target;
 		[SerializeField] EventType[] 	m_events;
-		
+
 		//--------------------------------------------------------------------------------
 		public new string name {get {return "";}}
 		//--------------------------------------------------------------------------------
@@ -57,9 +54,13 @@ namespace SimpleTween
 				return;
 			}
 
-			for (int i = 0; i < m_tweens.Count; i++)
+			for (int i = m_tweens.Count - 1; i >= 0; i--)
+			{
 				if (!validTweenTypes.Contains(m_tweens[i].Type))
 					m_tweens.RemoveAt(i);
+				else
+					m_tweens[i].Initialise(m_target);
+			}
 			
 			string log = string.Format ("TweenTypes for {0}", m_target.GetType ());
 			foreach (var ttype in validTweenTypes)
