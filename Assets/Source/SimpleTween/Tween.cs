@@ -14,15 +14,19 @@ namespace SimpleTween
 
 		[SerializeField] protected float m_duration = 1f;
 		[SerializeField] protected float m_delay = 0f;
+		[SerializeField] protected bool m_resetOnComplete;
 
 		protected Component m_targetRaw;
+		
 		protected bool m_isWaitingForDelay = false;
 
 		//--------------------------------------------------------------------------------
 		public abstract TweenType Type{get;}
 		//--------------------------------------------------------------------------------
-		protected virtual void UpdateTargetTransform(float _pcnt){}
+		protected virtual void UpdateTarget(float _pcnt){}
 		protected virtual void OnAnimationInitialisation (){}
+		protected virtual void OnTweenComplete (){}
+		protected abstract void ResetTarget();
 		//--------------------------------------------------------------------------------
 		public virtual void Initialise(Component _target)
 		{
@@ -30,15 +34,15 @@ namespace SimpleTween
 		}
 		
 		//--------------------------------------------------------------------------------
-		protected virtual void UpdateAnimationTime(ref float time)
+		protected virtual void UpdateAnimationTime(ref float _time)
 		{
 			#if UNITY_EDITOR
 			// update at 60fps when not in play mode
 			if(!Application.isPlaying)
-				time += EDITOR_DELTA_TIME;
+				_time += EDITOR_DELTA_TIME;
 			else
 			#endif
-				time += Time.deltaTime;
+				_time += Time.deltaTime;
 		}
 
 		//---------------------------------------------------------------------------------------------------------
@@ -74,11 +78,16 @@ namespace SimpleTween
 				UpdateAnimationTime (ref time);
 				UpdateAnimationProgress (ref isComplete, out tPcnt, time);
 				if (!m_isWaitingForDelay)
-					UpdateTargetTransform (tPcnt);
+					UpdateTarget (tPcnt);
 
 				yield return null;
 			}
 
+			if(m_resetOnComplete)
+				ResetTarget();
+			
+			OnTweenComplete();
+			
 			if (_onComplete != null)
 				_onComplete ();
 		}

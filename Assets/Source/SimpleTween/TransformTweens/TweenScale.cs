@@ -14,7 +14,7 @@ namespace SimpleTween
 		public new string name {get {return "TweenScale";}}
 		public override TweenType Type { get { return TweenType.Scale; }}
 		//--------------------------------------------------------------------------------
-		protected override void UpdateTargetTransform (float _pcnt)
+		protected override void UpdateTarget (float _pcnt)
 		{
 			var scale = Vector3.one;
 			scale.x = m_xCurve.Evaluate (_pcnt);

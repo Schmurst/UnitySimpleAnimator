@@ -21,7 +21,7 @@ namespace SimpleTween
 		}
 
 		//--------------------------------------------------------------------------------
-		protected override void UpdateTargetTransform (float _pcnt)
+		protected override void UpdateTarget (float _pcnt)
 		{
 			m_target.color = Color.Lerp(m_startColour, m_targetColour, m_curve.Evaluate(_pcnt));
 		}
