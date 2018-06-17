@@ -11,10 +11,50 @@ namespace SimpleTween
 {
 	public class Tweener : MonoBehaviour
 	{
+		[SerializeField] Component m_target;
 		[SerializeField] protected List<Tween> m_tweens = new List<Tween>();
 
 		protected bool m_isTweenInProgress = false;
 
+		//--------------------------------------------------------------------------------
+		void Start()
+		{
+			if (m_target == null)
+				return;
+
+			OnValidate();
+		}
+
+		//--------------------------------------------------------------------------------
+		void OnValidate()
+		{
+			if (m_target == null)
+				return;
+			
+			var type = m_target.GetType ();
+			HashSet<TweenType> validTweenTypes;
+			if(!TweenManager.UsableTweensByType.TryGetValue(type, out validTweenTypes))
+			{
+				Debug.LogFormat ("No TweenTypes for {0}", m_target.GetType());
+				m_target = null;
+				return;
+			}
+
+			for (int i = m_tweens.Count - 1; i >= 0; i--)
+			{
+				if (!validTweenTypes.Contains(m_tweens[i].Type))
+					m_tweens.RemoveAt(i);
+				else
+					m_tweens[i].Initialise(m_target);
+			}
+			
+			string log = string.Format ("TweenTypes for {0}", m_target.GetType ());
+			foreach (var ttype in validTweenTypes)
+				log += string.Format ("\n{0}", ttype);
+
+			Debug.Log (log);
+		}
+		
 		//--------------------------------------------------------------------------------
 		public virtual void Play()
 		{

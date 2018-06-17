@@ -18,7 +18,6 @@ namespace SimpleTween
 	public class EventTweener : Tweener, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler,
 								IPointerUpHandler, IPointerClickHandler
 	{
-		[SerializeField] Component 		m_target;
 		[SerializeField] EventType[] 	m_events;
 
 		//--------------------------------------------------------------------------------
@@ -30,44 +29,7 @@ namespace SimpleTween
 		public void OnPointerDown 	(PointerEventData eventData){Execute (EventType.pointerDown);}
 		public void OnPointerUp  	(PointerEventData eventData){Execute (EventType.pointerUp);}
 		public void OnPointerClick 	(PointerEventData eventData){Execute (EventType.pointerClick);}
-		//--------------------------------------------------------------------------------
-		void Start()
-		{
-			if (m_target == null)
-				return;
-
-			OnValidate();
-		}
-
-		//--------------------------------------------------------------------------------
-		void OnValidate()
-		{
-			if (m_target == null)
-				return;
-			
-			var type = m_target.GetType ();
-			HashSet<TweenType> validTweenTypes;
-			if(!TweenManager.UsableTweensByType.TryGetValue(type, out validTweenTypes))
-			{
-				Debug.LogFormat ("No TweenTypes for {0}", m_target.GetType());
-				m_target = null;
-				return;
-			}
-
-			for (int i = m_tweens.Count - 1; i >= 0; i--)
-			{
-				if (!validTweenTypes.Contains(m_tweens[i].Type))
-					m_tweens.RemoveAt(i);
-				else
-					m_tweens[i].Initialise(m_target);
-			}
-			
-			string log = string.Format ("TweenTypes for {0}", m_target.GetType ());
-			foreach (var ttype in validTweenTypes)
-				log += string.Format ("\n{0}", ttype);
-
-			Debug.Log (log);
-		}
+		
 		
 		//--------------------------------------------------------------------------------
 		bool ShouldPlayEvent(EventType _type)
