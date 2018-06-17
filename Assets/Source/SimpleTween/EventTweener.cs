@@ -29,8 +29,6 @@ namespace SimpleTween
 		public void OnPointerDown 	(PointerEventData eventData){Execute (EventType.pointerDown);}
 		public void OnPointerUp  	(PointerEventData eventData){Execute (EventType.pointerUp);}
 		public void OnPointerClick 	(PointerEventData eventData){Execute (EventType.pointerClick);}
-		
-		
 		//--------------------------------------------------------------------------------
 		bool ShouldPlayEvent(EventType _type)
 		{

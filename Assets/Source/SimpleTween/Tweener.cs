@@ -56,7 +56,7 @@ namespace SimpleTween
 		}
 		
 		//--------------------------------------------------------------------------------
-		public virtual void Play()
+		public virtual void Play(Action _onComplete = null)
 		{
 			if (m_isTweenInProgress)
 				return;
@@ -64,7 +64,7 @@ namespace SimpleTween
 		}
 
 		//--------------------------------------------------------------------------------
-		protected IEnumerator Co_PlayTweens()
+		protected IEnumerator Co_PlayTweens(Action _onComplete = null)
 		{
 			Debug.LogFormat("Started Tween on {0}", name);
 			m_isTweenInProgress = true;
@@ -82,13 +82,16 @@ namespace SimpleTween
 			}
 
 			yield return waitForAnimsToFinish;
+
+			if (_onComplete != null)
+				_onComplete();
 			
 			m_isTweenInProgress = false;
 		}
 
 		//--------------------------------------------------------------------------------
 		#if UNITY_EDITOR
-		[CustomEditor(typeof(Tweener))]
+		[CustomEditor(typeof(Tweener), true)]
 		class TweenerEditor : Editor
 		{
 			public override void OnInspectorGUI ()

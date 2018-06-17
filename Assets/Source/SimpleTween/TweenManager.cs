@@ -16,7 +16,6 @@ namespace SimpleTween
 		NullOrLength
 	}
 	
-	
 	public static class TweenManager
 	{
 		public static readonly Dictionary<Type, HashSet<TweenType>> UsableTweensByType = new Dictionary<Type, HashSet<TweenType>>
